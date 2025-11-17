@@ -21,17 +21,31 @@ export default function NewsDemo({ walletConnected, selectedAccount }: Props) {
 
     try {
       const apiUrl = useDemoMode 
-        ? `https://api.polkax402.com/api/polka-news/demo?query=${encodeURIComponent(query)}&paid=true`
+        ? `https://api.polkax402.com/api/polka-news/demo?query=${encodeURIComponent(query)}`
         : `https://api.polkax402.com/api/polka-news?query=${encodeURIComponent(query)}`;
 
       const response = await fetch(apiUrl);
-      const data = await response.json();
-
+      
       if (!response.ok) {
-        throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 
-      setResult(data);
+      const data = await response.json();
+
+      // Normalize the response structure
+      const normalizedData = {
+        mode: useDemoMode ? 'demo' : 'production',
+        timestamp: data.data?.as_of || new Date().toISOString(),
+        query: data.data?.query_used || query,
+        news: data.data?.summary_markdown || data.news || '',
+        sources: data.data?.sources || data.sources || [],
+        payment: data.payment,
+        provider: data.provider,
+        version: data.version,
+      };
+
+      setResult(normalizedData);
     } catch (err: any) {
       console.error('Error fetching news:', err);
       setError(err.message || 'Failed to fetch news');
