@@ -9,7 +9,7 @@ interface Props {
 }
 
 export default function NewsDemo({ walletConnected, selectedAccount }: Props) {
-  const [query, setQuery] = useState('governance');
+  const [query, setQuery] = useState('Polkadot News');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
