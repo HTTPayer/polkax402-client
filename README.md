@@ -42,11 +42,11 @@ HTTPAYER_RELAY_URL=https://api.httpayer.com/relay
 OPENAI_API_KEY=sk-...
 
 # Para X402 Middleware (recibe pagos)
-NETWORK=dotx402
+polkax402polkax402
 RECIPIENT_ADDRESS=5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
 PRICE_PER_REQUEST=10000000000
 CONTRACT_ADDRESS=5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM
-FACILITATOR_URL=http://localhost:4000/settle
+FACILITATOR_URL=https://facilitator.polkax402.dpdns.org/settle
 ```
 
 ### Dependencias
@@ -71,7 +71,7 @@ El servidor se iniciará en `http://localhost:3000` con salida:
 📡 Listening:     http://localhost:3000
 👤 Recipient:     5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
 💰 Price/request: 10000000000 (smallest unit)
-🔄 Facilitator:   http://localhost:4000/settle
+🔄 Facilitator:   https://facilitator.polkax402.dpdns.org/settle
 
 💡 Endpoints:
    GET  /health                        - Health check (free)
@@ -124,7 +124,7 @@ import { privateKeyToAccount } from 'viem/accounts';
 const account = privateKeyToAccount('0xYOUR_PRIVATE_KEY');
 const x402fetch = createX402Fetch({
   wallet: account,
-  network: 'dotx402',
+  network: 'polkax402',
 });
 
 // Pago automático si es necesario
@@ -187,7 +187,7 @@ src/
 2. **RECIPIENT_ADDRESS** (Servidor - Recibe)
    - Wallet que recibe pagos de clientes del API
    - Configurado en X402 middleware
-   - Red configurable (dotx402, base, etc.)
+   - Red configurable (polkax402, base, etc.)
 
 ### Precios
 

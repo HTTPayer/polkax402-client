@@ -1,5 +1,9 @@
+import dotenv from "dotenv";
 import { privateKeyToAccount } from "viem/accounts";
-import { wrapFetchWithPayment } from "x402-fetch";
+import { wrapFetchWithPayment, createSigner } from "x402-fetch";
+
+// Load env vars first
+dotenv.config();
 
 const HTTPAYER_RELAY_URL =
   process.env.HTTPAYER_RELAY_URL || "https://api.httpayer.com/relay";
@@ -12,16 +16,27 @@ if (PRIVATE_KEY && !PRIVATE_KEY.startsWith("0x")) {
   PRIVATE_KEY = `0x${PRIVATE_KEY}`;
 }
 
-// Only create account and payment-enabled fetch if PRIVATE_KEY is provided
+// Create x402-fetch that auto-handles 402 responses
 let fetchWithPayment: typeof fetch = fetch;
+let signerPromise: Promise<any> | null = null;
+
 if (PRIVATE_KEY) {
   try {
     const account = privateKeyToAccount(PRIVATE_KEY as `0x${string}`);
-    fetchWithPayment = wrapFetchWithPayment(fetch, account) as typeof fetch;
+    // Create a signer from the private key for x402-fetch (async)
+    signerPromise = createSigner("base", PRIVATE_KEY).then((signer) => {
+      console.log("[FirecrawlClient] x402-fetch configured with wallet:", account.address);
+      return signer;
+    });
+    
+    // Wrap fetch with payment handling - will auto-pay on 402
+    // Note: we'll initialize this lazily in the client
   } catch (err) {
     console.warn("[FirecrawlClient] invalid PRIVATE_KEY provided:", err);
-    // keep fallback to regular fetch
+    signerPromise = null;
   }
+} else {
+  console.warn("[FirecrawlClient] No PRIVATE_KEY - x402 payments will fail");
 }
 
 export interface FirecrawlSearchOptions {
@@ -90,13 +105,34 @@ export class FirecrawlClient {
       },
     };
 
-    const response = await fetchWithPayment(HTTPAYER_RELAY_URL, {
+    // Initialize fetchWithPayment if signer is available
+    let currentFetch = fetch;
+    if (signerPromise) {
+      try {
+        const signer = await signerPromise;
+        console.log("[FirecrawlClient] Signer initialized, wrapping fetch with payment handler");
+        currentFetch = wrapFetchWithPayment(
+          fetch,
+          signer,
+          BigInt(100000), // max 0.1 USDC
+        ) as typeof fetch;
+      } catch (err) {
+        console.error("[FirecrawlClient] Failed to initialize signer:", err);
+      }
+    } else {
+      console.warn("[FirecrawlClient] No signer available - payments will fail");
+    }
+
+    console.log("[FirecrawlClient] Making request to HTTPayer relay...");
+    const response = await currentFetch(HTTPAYER_RELAY_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(relayPayload),
     });
+
+    console.log("[FirecrawlClient] Response status:", response.status);
 
     if (!response.ok) {
       const text = await response.text().catch(() => "");

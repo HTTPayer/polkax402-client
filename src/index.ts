@@ -18,7 +18,7 @@ app.get('/health', (_req, res) => {
     timestamp: new Date().toISOString(),
     service: 'Polkax402 API',
     version: '0.1.0',
-    network: process.env.NETWORK || 'dotx402',
+    network: process.env.NETWORK || 'polkax402',
   });
 });
 
@@ -41,7 +41,7 @@ app.get("/", (req, res) => {
 // Example X402 protected endpoint with dynamic pricing
 app.get('/api/example/protected',
   createX402Middleware({
-    network: process.env.NETWORK || 'dotx402',
+    network: process.env.NETWORK || 'polkax402',
     recipientAddress: process.env.RECIPIENT_ADDRESS || '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
     pricePerRequest: (req) => {
       // Dynamic pricing based on query parameter
@@ -50,7 +50,7 @@ app.get('/api/example/protected',
       return String(basePrice * complexity);
     },
     asset: process.env.CONTRACT_ADDRESS || '5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM',
-    facilitatorUrl: process.env.FACILITATOR_URL || 'http://localhost:4000/settle',
+    facilitatorUrl: process.env.FACILITATOR_URL || 'https://facilitator.polkax402.dpdns.org/settle',
     requireFacilitatorConfirmation: true,
     resourceDescription: 'Example protected endpoint with dynamic pricing',
     responseMimeType: 'application/json',
@@ -84,13 +84,13 @@ const swaggerOptions = {
 };
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(openapiSpec as any, swaggerOptions));
 
-const port = process.env.PORT ? Number(process.env.PORT) : 3000;
+const port = process.env.PORT ? Number(process.env.PORT) : 3001;
 app.listen(port, () => {
   console.log('\n🚀 Polkax402 Server - LIVE\n');
   console.log(`📡 Listening:     http://localhost:${port}`);
   console.log(`👤 Recipient:     ${process.env.RECIPIENT_ADDRESS || '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'}`);
   console.log(`💰 Price/request: ${process.env.PRICE_PER_REQUEST || '10000000000'} (smallest unit)`);
-  console.log(`🔄 Facilitator:   ${process.env.FACILITATOR_URL || 'http://localhost:4000/settle'}\n`);
+  console.log(`🔄 Facilitator:   ${process.env.FACILITATOR_URL || 'https://facilitator.polkax402.dpdns.org/settle'}\n`);
   console.log('💡 Endpoints:');
   console.log('   GET  /health                        - Health check (free)');
   console.log('   GET  /docs                          - API documentation (free)');

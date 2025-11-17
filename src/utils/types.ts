@@ -14,15 +14,62 @@ export interface PolkaNewsOutput {
 // ===== X402 Types =====
 import { Request } from 'express';
 
+// Polkadot Signer Interface
+export interface PolkadotSigner {
+  address: string;
+  sign: (payload: string | Uint8Array) => Promise<{ signature: string }>;
+}
+
+// X402 Payment Required (from 402 response)
+export interface X402PaymentRequired {
+  scheme: string;
+  network: string;
+  payTo: string;
+  asset: string;
+  maxAmountRequired: string;
+  resource: string;
+  description?: string;
+  mimeType?: string;
+  maxTimeoutSeconds?: number;
+}
+
+// Payment Payload (before signing)
+export interface PaymentPayload {
+  from: string;
+  to: string;
+  amount: string;
+  asset: string;
+  resource: string;
+  network: string;
+  nonce: string;
+  timestamp: number;
+  validUntil: number;
+}
+
+// Signed Payment (after signing)
+export interface SignedPayment extends PaymentPayload {
+  signature: string;
+}
+
+// X402 Payment (complete payment object)
+export interface X402Payment {
+  x402Version: number;
+  network: string;
+  asset: string;
+  payment: SignedPayment;
+}
+
 export interface X402PaymentPayload {
   from: string;
   to: string;
   amount: string;
   asset: string;
   network: string;
+  resource: string;
   nonce: string;
   timestamp: number;
   signature: string;
+  validUntil: number;
   resourceHash?: string;
 }
 

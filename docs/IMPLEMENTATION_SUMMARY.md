@@ -140,11 +140,11 @@ Se ha implementado un **middleware X402 completamente funcional** basado en el e
 
 ```bash
 # X402 Middleware - Servidor (recibe pagos)
-NETWORK=dotx402
+polkax402polkax402
 RECIPIENT_ADDRESS=5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
 PRICE_PER_REQUEST=10000000000
 CONTRACT_ADDRESS=5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM
-FACILITATOR_URL=http://localhost:4000/settle
+FACILITATOR_URL=https://facilitator.polkax402.dpdns.org/settle
 
 # Firecrawl Client - Cliente (paga via HTTPayer)
 PRIVATE_KEY=0xYOUR_PRIVATE_KEY
@@ -215,7 +215,7 @@ import { createX402Fetch } from 'x402-fetch';
 import { privateKeyToAccount } from 'viem/accounts';
 
 const account = privateKeyToAccount('0xYOUR_PRIVATE_KEY');
-const x402fetch = createX402Fetch({ wallet: account, network: 'dotx402' });
+const x402fetch = createX402Fetch({ wallet: account, network: 'polkax402' });
 
 const response = await x402fetch('http://localhost:3000/api/polka-news?query=gov');
 const data = await response.json();
@@ -240,7 +240,7 @@ npm run dev
 # 📡 Listening: http://localhost:3000
 # 👤 Recipient: 5GrwvaEF...
 # 💰 Price/request: 10000000000
-# 🔄 Facilitator: http://localhost:4000/settle
+# 🔄 Facilitator: https://facilitator.polkax402.dpdns.org/settle
 ```
 
 ### Test Health

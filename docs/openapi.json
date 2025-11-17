@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3000",
+      "url": "http://localhost:3001",
       "description": "Local development server"
     },
     {
@@ -37,7 +37,7 @@
                     "timestamp": { "type": "string", "format": "date-time" },
                     "service": { "type": "string", "example": "Polkax402 API" },
                     "version": { "type": "string", "example": "0.1.0" },
-                    "network": { "type": "string", "example": "dotx402" }
+                    "network": { "type": "string", "example": "polkax402" }
                   }
                 }
               }
@@ -72,7 +72,7 @@
             "description": "X402 payment payload (JSON string)",
             "required": false,
             "schema": { "type": "string" },
-            "example": "{\"from\":\"5GrwvaEF...\",\"to\":\"5GrwvaEF...\",\"amount\":\"10000000000\",\"asset\":\"5CR7oWeb...\",\"network\":\"dotx402\",\"nonce\":\"unique-123\",\"timestamp\":1700000000000,\"signature\":\"0x...\"}"
+            "example": "{\"from\":\"5GrwvaEF...\",\"to\":\"5GrwvaEF...\",\"amount\":\"10000000000\",\"asset\":\"5CR7oWeb...\",\"network\":\"polkax402\",\"nonce\":\"unique-123\",\"timestamp\":1700000000000,\"signature\":\"0x...\"}"
           },
           {
             "name": "x-payment-signature",
@@ -125,7 +125,7 @@
                       "accepts": [
                         {
                           "scheme": "exact",
-                          "network": "dotx402",
+                          "network": "polkax402",
                           "payTo": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
                           "asset": "5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM",
                           "maxAmountRequired": "10000000000",
@@ -314,7 +314,7 @@
                   "accepts": [
                     {
                       "scheme": "exact",
-                      "network": "dotx402",
+                      "network": "polkax402",
                       "payTo": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
                       "asset": "5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM",
                       "maxAmountRequired": "30000000000",
@@ -390,7 +390,7 @@
               "type": "object",
               "properties": {
                 "scheme": { "type": "string", "example": "exact", "description": "Payment scheme" },
-                "network": { "type": "string", "example": "dotx402", "description": "Blockchain network" },
+                "network": { "type": "string", "example": "polkax402", "description": "Blockchain network" },
                 "payTo": { "type": "string", "example": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", "description": "Recipient address" },
                 "asset": { "type": "string", "example": "5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM", "description": "Asset/token contract address" },
                 "maxAmountRequired": { "type": "string", "example": "10000000000", "description": "Maximum payment amount required (in smallest unit)" },
@@ -425,7 +425,7 @@
           "to": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
           "amount": "10000000000",
           "asset": "5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM",
-          "network": "dotx402",
+          "network": "polkax402",
           "nonce": "unique-nonce-123",
           "timestamp": 1700000000000,
           "signature": "0xdeadbeef..."

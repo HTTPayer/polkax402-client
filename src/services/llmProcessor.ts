@@ -77,7 +77,22 @@ export class LlmProcessor {
     }
 
     try {
-      const parsed = JSON.parse(content) as PolkaNewsOutput;
+      // Clean markdown code blocks if present
+      let cleanedContent = content.trim();
+      
+      // Remove ```json ... ``` or ``` ... ``` blocks
+      if (cleanedContent.startsWith("```")) {
+        // Find the first newline after opening ```
+        const firstNewline = cleanedContent.indexOf("\n");
+        // Find the closing ```
+        const lastBackticks = cleanedContent.lastIndexOf("```");
+        
+        if (firstNewline !== -1 && lastBackticks > firstNewline) {
+          cleanedContent = cleanedContent.substring(firstNewline + 1, lastBackticks).trim();
+        }
+      }
+      
+      const parsed = JSON.parse(cleanedContent) as PolkaNewsOutput;
       return parsed;
     } catch (err) {
       console.error("[LlmProcessor] Failed to parse LLM JSON", err, content);

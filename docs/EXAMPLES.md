@@ -15,7 +15,7 @@ curl http://localhost:3000/health
   "timestamp": "2025-11-16T21:34:32.000Z",
   "service": "Polkax402 API",
   "version": "0.1.0",
-  "network": "dotx402"
+  "network": "polkax402"
 }
 ```
 
@@ -100,7 +100,7 @@ Content-Type: application/json
   "accepts": [
     {
       "scheme": "exact",
-      "network": "dotx402",
+      "network": "polkax402",
       "payTo": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
       "asset": "5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM",
       "maxAmountRequired": "10000000000",
@@ -118,7 +118,7 @@ Content-Type: application/json
 ```bash
 curl -i \
   -H "Content-Type: application/json" \
-  -H 'x-payment: {"from":"5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY","to":"5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY","amount":"10000000000","asset":"5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM","network":"dotx402","nonce":"unique-nonce-123","timestamp":1700000000000,"signature":"0xdeadbeef"}' \
+  -H 'x-payment: {"from":"5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY","to":"5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY","amount":"10000000000","asset":"5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM","network":"polkax402","nonce":"unique-nonce-123","timestamp":1700000000000,"signature":"0xdeadbeef"}' \
   -H "x-payment-signature: 0xsignature_here" \
   "http://localhost:3000/api/polka-news?query=parachains"
 ```
@@ -164,7 +164,7 @@ curl -i "http://localhost:3000/api/example/protected?complexity=3"
   "accepts": [
     {
       "scheme": "exact",
-      "network": "dotx402",
+      "network": "polkax402",
       "payTo": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
       "asset": "5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM",
       "maxAmountRequired": "30000000000",
@@ -201,7 +201,7 @@ const account = privateKeyToAccount('0xYOUR_PRIVATE_KEY');
 // Crear fetch con soporte X402
 const x402fetch = createX402Fetch({
   wallet: account,
-  network: 'dotx402',
+  network: 'polkax402',
 });
 
 // Hacer request - pago automático si es necesario
@@ -372,11 +372,11 @@ FIRECRAWL_TOKEN=your_firecrawl_token
 OPENAI_API_KEY=sk-...
 
 # Para X402 Middleware
-NETWORK=dotx402
+polkax402polkax402
 RECIPIENT_ADDRESS=5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
 PRICE_PER_REQUEST=10000000000
 CONTRACT_ADDRESS=5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM
-FACILITATOR_URL=http://localhost:4000/settle
+FACILITATOR_URL=https://facilitator.polkax402.dpdns.org/settle
 ```
 
 ---

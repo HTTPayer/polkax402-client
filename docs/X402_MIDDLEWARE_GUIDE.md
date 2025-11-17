@@ -20,8 +20,8 @@ El middleware X402 implementa el protocolo de pago HTTP 402 (Payment Required) p
 Copia `.env.example` a `.env` y configura:
 
 ```bash
-# Network (dotx402, base, ethereum, polygon, etc.)
-NETWORK=dotx402
+# Network (polkax402, base, ethereum, polygon, etc.)
+polkax402polkax402
 
 # Tu dirección de recepción de pagos
 RECIPIENT_ADDRESS=5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
@@ -33,7 +33,7 @@ PRICE_PER_REQUEST=10000000000
 CONTRACT_ADDRESS=5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM
 
 # URL del facilitador para settlement on-chain
-FACILITATOR_URL=http://localhost:4000/settle
+FACILITATOR_URL=https://facilitator.polkax402.dpdns.org/settle
 ```
 
 ### 2. Uso Básico
@@ -43,7 +43,7 @@ import { createX402Middleware } from './middleware/x402Middleware';
 
 // Crear middleware con precio fijo
 const x402 = createX402Middleware({
-  network: process.env.NETWORK || 'dotx402',
+  network: process.env.NETWORK || 'polkax402',
   recipientAddress: process.env.RECIPIENT_ADDRESS!,
   pricePerRequest: '10000000000', // Precio fijo
   asset: process.env.CONTRACT_ADDRESS!,
@@ -70,7 +70,7 @@ app.get('/api/premium', x402, (req, res) => {
 ```typescript
 // Precio basado en parámetros de query
 const dynamicX402 = createX402Middleware({
-  network: process.env.NETWORK || 'dotx402',
+  network: process.env.NETWORK || 'polkax402',
   recipientAddress: process.env.RECIPIENT_ADDRESS!,
   pricePerRequest: (req) => {
     const complexity = parseInt(req.query.complexity as string) || 1;
@@ -107,7 +107,7 @@ x-payment-signature: <Firma del pago>
   "to": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
   "amount": "10000000000",
   "asset": "5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM",
-  "network": "dotx402",
+  "network": "polkax402",
   "nonce": "unique-nonce-here",
   "timestamp": 1700000000000,
   "signature": "0x..."
@@ -124,7 +124,7 @@ Si no hay pago o es inválido, el servidor responde con 402:
   "accepts": [
     {
       "scheme": "exact",
-      "network": "dotx402",
+      "network": "polkax402",
       "payTo": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
       "asset": "5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM",
       "maxAmountRequired": "10000000000",
@@ -174,7 +174,7 @@ El middleware valida:
 
 ```typescript
 interface X402MiddlewareConfig {
-  // Red blockchain (dotx402, base, ethereum, etc.)
+  // Red blockchain (polkax402, base, ethereum, etc.)
   network: string;
   
   // Tu dirección para recibir pagos
@@ -314,7 +314,7 @@ import { createX402Fetch } from 'x402-fetch';
 
 const x402fetch = createX402Fetch({
   wallet: yourWallet,
-  network: 'dotx402',
+  network: 'polkax402',
 });
 
 const response = await x402fetch('http://localhost:3000/api/polka-news?query=governance');
@@ -335,3 +335,8 @@ Para problemas o preguntas, revisa:
 2. Configuración de `.env`
 3. Estado del facilitador
 4. Validez de los pagos del cliente
+
+    body: JSON.stringify({
+        ...payment,
+        signature,
+      }),

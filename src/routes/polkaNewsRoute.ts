@@ -9,12 +9,12 @@ const firecrawlClient = new FirecrawlClient();
 
 // Create X402 middleware with configuration from environment
 const x402Protected = createX402Middleware({
-  network: process.env.NETWORK || 'dotx402',
+  network: process.env.NETWORK || 'polkax402',
   recipientAddress: process.env.RECIPIENT_ADDRESS || '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
   pricePerRequest: process.env.PRICE_PER_REQUEST || '10000000000', // 0.01 tokens
   asset: process.env.CONTRACT_ADDRESS || '5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM',
-  facilitatorUrl: process.env.FACILITATOR_URL || 'http://localhost:4000/settle',
-  requireFacilitatorConfirmation: true,
+  facilitatorUrl: process.env.FACILITATOR_URL || 'https://facilitator.polkax402.dpdns.org/settle',
+  requireFacilitatorConfirmation: process.env.REQUIRE_FACILITATOR !== 'false', // Can disable with REQUIRE_FACILITATOR=false
   maxPaymentAge: 300000, // 5 minutes
   resourceDescription: 'Polkadot News aggregation and AI-powered summary service',
   responseMimeType: 'application/json',

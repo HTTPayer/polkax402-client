@@ -1,0 +1,15 @@
+{
+  "payment": {
+    "from": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+    "to": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+    "amount": "10000000000",
+    "asset": "5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM",
+    "resource": "/api/polka-news?query=test",
+    "network": "polkax402",
+    "nonce": "8w2bp44i7dv",
+    "timestamp": 1763367932371,
+    "validUntil": 1763368232371,
+    "signature": "0x60aaf2468a9543574ea5a9661e804352fff1f569a499aa8cc1b2a571da16f432c117ac0472a19a148ebc3ee6e54ed3e6faef80e1028658a3b69abddff422e384"
+  },
+  "signature": "0x60aaf2468a9543574ea5a9661e804352fff1f569a499aa8cc1b2a571da16f432c117ac0472a19a148ebc3ee6e54ed3e6faef80e1028658a3b69abddff422e384"
+}

@@ -28,7 +28,7 @@ export function createX402Middleware(config: X402MiddlewareConfig) {
       const paymentHeader = req.header('x-payment');
       const signatureHeader = req.header('x-payment-signature');
 
-      if (!paymentHeader || !signatureHeader) {
+      if (!paymentHeader) {
         return send402Response(req, res, config, requiredPrice);
       }
 
@@ -36,11 +36,22 @@ export function createX402Middleware(config: X402MiddlewareConfig) {
       let paymentPayload: X402PaymentPayload;
       try {
         paymentPayload = JSON.parse(paymentHeader);
+        console.log('[X402Middleware] Received payment payload:', JSON.stringify(paymentPayload, null, 2));
       } catch (err) {
         return res.status(400).json({
           error: 'Invalid payment header format',
           message: 'Payment header must be valid JSON',
         });
+      }
+      
+      // Signature can be either in header or in payload
+      if (!paymentPayload.signature && !signatureHeader) {
+        return send402Response(req, res, config, requiredPrice);
+      }
+      
+      // If signature is in header, add it to payload
+      if (signatureHeader && !paymentPayload.signature) {
+        paymentPayload.signature = signatureHeader;
       }
 
       // Validate payment payload
@@ -71,8 +82,7 @@ export function createX402Middleware(config: X402MiddlewareConfig) {
         try {
           const facilitatorResult = await verifyWithFacilitator(
             config.facilitatorUrl,
-            paymentPayload,
-            signatureHeader
+            paymentPayload
           );
           
           facilitatorConfirmed = facilitatorResult.success;
@@ -188,26 +198,38 @@ function validatePaymentPayload(
  */
 async function verifyWithFacilitator(
   facilitatorUrl: string,
-  payment: X402PaymentPayload,
-  signature: string
+  payment: X402PaymentPayload
 ): Promise<any> {
-  const response = await fetch(facilitatorUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      payment,
-      signature,
-    }),
+  // Log what we're sending
+  console.log('[X402Middleware] Sending to facilitator:', {
+    url: facilitatorUrl,
+    payment: payment,
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Facilitator returned ${response.status}: ${errorText}`);
-  }
+  try {
+    const response = await fetch(facilitatorUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payment),
+    });
 
-  return await response.json();
+    console.log('[X402Middleware] Facilitator response status:', response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.log('[X402Middleware] Facilitator error response:', errorText);
+      throw new Error(`Facilitator returned ${response.status}: ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log('[X402Middleware] Facilitator success response:', result);
+    return result;
+  } catch (error) {
+    console.error('[X402Middleware] Facilitator request failed:', error);
+    throw error;
+  }
 }
 
 /**
@@ -224,9 +246,9 @@ export function placeholderX402Middleware(req: Request, res: Response, next: Nex
   }
 
   const payTo = process.env.X402_PAY_TO || "0x0000000000000000000000000000000000000000";
-  const asset = process.env.X402_ASSET || "USDC";
+  const asset = process.env.X402_ASSET || "HTTPUSD";
   const maxAmountRequired = process.env.X402_AMOUNT || "0.25";
-  const network = process.env.X402_NETWORK || "base";
+  const network = process.env.X402_NETWORK || "polkax402";
 
   const payload = {
     x402Version: 1,
