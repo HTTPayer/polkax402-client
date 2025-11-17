@@ -2,8 +2,18 @@
 
 import { useState } from 'react';
 import { Wallet, Sparkles, CheckCircle2, ExternalLink } from 'lucide-react';
-import PolkadotWalletConnect from '@/components/PolkadotWalletConnect';
-import NewsDemo from '@/components/NewsDemo';
+import dynamic from 'next/dynamic';
+
+// Dynamic imports to avoid SSR issues with Polkadot extension
+const PolkadotWalletConnect = dynamic(
+  () => import('@/components/PolkadotWalletConnect'),
+  { ssr: false }
+);
+
+const NewsDemo = dynamic(
+  () => import('@/components/NewsDemo'),
+  { ssr: false }
+);
 
 export default function Home() {
   const [walletConnected, setWalletConnected] = useState(false);
