@@ -220,29 +220,50 @@ export default function NewsDemo({ walletConnected, selectedAccount }: Props) {
             </div>
           )}
 
-          {/* Sources */}
+          {/* Individual News Articles */}
           {result.sources && result.sources.length > 0 && (
-            <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
-              <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
-                <h4 className="font-semibold text-slate-900">Sources ({result.sources.length})</h4>
+            <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
+              <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-4 py-3 border-b border-slate-200">
+                <h4 className="font-semibold text-slate-900">
+                  Latest News ({result.sources.length} {result.sources.length === 1 ? 'article' : 'articles'})
+                </h4>
+                <p className="text-xs text-slate-600 mt-1">
+                  Curated articles about: <span className="font-medium">{result.query}</span>
+                </p>
               </div>
-              <div className="p-4 space-y-2">
+              <div className="divide-y divide-slate-200">
                 {result.sources.map((source: any, idx: number) => (
-                  <a
+                  <article
                     key={idx}
-                    href={source.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-start gap-2 p-3 hover:bg-slate-50 rounded-lg transition-colors group"
+                    className="p-5 hover:bg-gradient-to-r hover:from-purple-50/30 hover:to-pink-50/30 transition-all group"
                   >
-                    <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-purple-600 shrink-0 mt-0.5" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-900 group-hover:text-purple-600 truncate">
-                        {source.title || source.url}
-                      </p>
-                      <p className="text-xs text-slate-500 truncate">{source.url}</p>
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm">
+                        {idx + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <a
+                          href={source.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block"
+                        >
+                          <h5 className="text-base font-semibold text-slate-900 group-hover:text-purple-600 transition-colors mb-2 flex items-start gap-2">
+                            <span className="flex-1">{source.title}</span>
+                            <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-purple-600 shrink-0 mt-1" />
+                          </h5>
+                          {source.note && (
+                            <p className="text-sm text-slate-600 leading-relaxed mb-3">
+                              {source.note}
+                            </p>
+                          )}
+                          <p className="text-xs text-slate-500 truncate font-mono bg-slate-50 px-2 py-1 rounded inline-block">
+                            {source.url}
+                          </p>
+                        </a>
+                      </div>
                     </div>
-                  </a>
+                  </article>
                 ))}
               </div>
             </div>
