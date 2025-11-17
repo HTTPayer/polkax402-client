@@ -21,8 +21,8 @@ export default function NewsDemo({ walletConnected, selectedAccount }: Props) {
 
     try {
       const apiUrl = useDemoMode 
-        ? `http://localhost:3000/api/polka-news/demo?query=${encodeURIComponent(query)}&paid=true`
-        : `http://localhost:3000/api/polka-news?query=${encodeURIComponent(query)}`;
+        ? `https://api.polkax402.com/api/polka-news/demo?query=${encodeURIComponent(query)}&paid=true`
+        : `https://api.polkax402.com/api/polka-news?query=${encodeURIComponent(query)}`;
 
       const response = await fetch(apiUrl);
       const data = await response.json();

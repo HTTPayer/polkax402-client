@@ -15,14 +15,14 @@ import {
   createX402Payment,
   encodePaymentHeader,
   parsePaymentRequired,
-} from './src/utils/payment';
-import type { PolkadotSigner, X402PaymentRequired } from './src/utils/types';
+} from '../src/utils/payment';
+import type { PolkadotSigner, X402PaymentRequired } from '../src/utils/types';
 import dotenv from 'dotenv';
 
 // Load environment variables
 dotenv.config();
 
-const SERVER_URL = process.env.API_URL || 'http://localhost:3001';
+const SERVER_URL = process.env.API_URL || 'https://api.polkax402.com';
 const FACILITATOR_URL = process.env.FACILITATOR_URL || 'https://facilitator.polkax402.dpdns.org/settle';
 
 /**
