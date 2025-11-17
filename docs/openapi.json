@@ -1,0 +1,154 @@
+{
+    
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Polkax402 API",
+    "version": "0.1.0",
+    "description": "Polkax402 + HTTPayer (x402-fetch) + LLM processor. Endpoint to fetch Polkadot-related news and return readable markdown + structured JSON."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development server"
+    },
+    {
+        "url": "https://api.polkax402.com",
+        "description": "Production server"
+    }
+
+  ],
+  "externalDocs": {
+    "description": "HTTPayer Team - Website",
+    "url": "https://httpayer.com"
+  },
+  "paths": {
+    "/api/polka-news": {
+      "get": {
+        "summary": "Search Polkadot-related news and return readable summary",
+        "tags": [
+          "Polka News"
+        ],
+        "description": "Performs a Firecrawl search via HTTPayer relay, then formats results using an LLM into a human-readable markdown summary and structured JSON.",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "Search query to send to Firecrawl (defaults to latest Polkadot/Kusama ecosystem news)",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of Firecrawl results (1-10)",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1, "maximum": 10 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success - formatted PolkaNews output",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderResponse"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment Required - Returns x402 payment instructions",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/X402PaymentInstruction" },
+                "example": {
+                  "x402Version": 1,
+                  "accepts": [
+                    {
+                      "scheme": "exact",
+                      "network": "base",
+                      "payTo": "0x0000000000000000000000000000000000000000",
+                      "asset": "USDC",
+                      "maxAmountRequired": "0.25",
+                      "resource": "/api/polka-news",
+                      "description": "Payment required to access this endpoint",
+                      "mimeType": "application/json",
+                      "maxTimeoutSeconds": 180
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PolkaNewsOutput": {
+        "type": "object",
+        "properties": {
+          "as_of": { "type": "string", "format": "date-time" },
+          "query_used": { "type": "string" },
+          "summary_markdown": { "type": "string", "description": "Human readable summary in Markdown" },
+          "bullets": { "type": "array", "items": { "type": "string" } },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": { "type": "string" },
+                "url": { "type": "string", "format": "uri" },
+                "note": { "type": "string" }
+              }
+            }
+          }
+        },
+        "required": ["as_of", "query_used", "summary_markdown", "bullets", "sources"]
+      },
+      "ProviderResponse": {
+        "type": "object",
+        "properties": {
+          "provider": { "type": "string", "example": "polkax402" },
+          "version": { "type": "string", "example": "v0.1.0" },
+          "price_per_call_usd": { "type": "number", "example": 0.25 },
+          "data": { "$ref": "#/components/schemas/PolkaNewsOutput" }
+        },
+        "required": ["provider", "version", "price_per_call_usd", "data"]
+      }
+      ,
+      "X402PaymentInstruction": {
+        "type": "object",
+        "properties": {
+          "x402Version": { "type": "integer", "example": 1 },
+          "accepts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "scheme": { "type": "string", "example": "exact" },
+                "network": { "type": "string", "example": "base" },
+                "payTo": { "type": "string", "example": "0x0000000000000000000000000000000000000000" },
+                "asset": { "type": "string", "example": "USDC" },
+                "maxAmountRequired": { "type": "string", "example": "0.25" },
+                "resource": { "type": "string", "example": "/api/polka-news" },
+                "description": { "type": "string", "example": "Payment required to access this endpoint" },
+                "mimeType": { "type": "string", "example": "application/json" },
+                "maxTimeoutSeconds": { "type": "integer", "example": 180 }
+              },
+              "required": ["scheme", "network", "payTo", "asset", "maxAmountRequired", "resource"]
+            }
+          }
+        },
+        "required": ["x402Version", "accepts"]
+      }
+    }
+  }
+}
