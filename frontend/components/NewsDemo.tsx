@@ -120,20 +120,88 @@ export default function NewsDemo({ walletConnected, selectedAccount }: Props) {
 
           {/* News Content */}
           {result.news && (
-            <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
-              <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
-                <h4 className="font-semibold text-slate-900">Polkadot News Summary</h4>
+            <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 px-4 py-3 border-b border-slate-200">
+                <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-purple-600" />
+                  AI Generated Summary
+                </h4>
                 <p className="text-xs text-slate-600 mt-1">
-                  Query: <span className="font-mono">{result.query || query}</span>
+                  Query: <span className="font-mono bg-white px-2 py-0.5 rounded">{result.query || query}</span>
                 </p>
               </div>
-              <div className="p-4">
-                <div 
-                  className="prose prose-sm max-w-none text-slate-700"
-                  dangerouslySetInnerHTML={{ 
-                    __html: result.news.replace(/\n/g, '<br/>') 
-                  }}
-                />
+              <div className="p-6 bg-gradient-to-b from-white to-slate-50">
+                <div className="prose prose-slate max-w-none">
+                  {result.news.split('\n\n').map((paragraph: string, idx: number) => {
+                    // Handle headings
+                    if (paragraph.startsWith('### ')) {
+                      return (
+                        <h3 key={idx} className="text-xl font-bold text-slate-900 mt-6 mb-3 first:mt-0">
+                          {paragraph.replace('### ', '')}
+                        </h3>
+                      );
+                    }
+                    if (paragraph.startsWith('## ')) {
+                      return (
+                        <h2 key={idx} className="text-2xl font-bold text-slate-900 mt-8 mb-4 first:mt-0">
+                          {paragraph.replace('## ', '')}
+                        </h2>
+                      );
+                    }
+                    if (paragraph.startsWith('# ')) {
+                      return (
+                        <h1 key={idx} className="text-3xl font-bold text-slate-900 mt-8 mb-4 first:mt-0">
+                          {paragraph.replace('# ', '')}
+                        </h1>
+                      );
+                    }
+                    
+                    // Handle bullet points
+                    if (paragraph.includes('\n- ') || paragraph.startsWith('- ')) {
+                      const items = paragraph.split('\n').filter(line => line.trim());
+                      return (
+                        <ul key={idx} className="list-disc list-inside space-y-2 my-4 text-slate-700">
+                          {items.map((item, i) => (
+                            <li key={i} className="leading-relaxed">
+                              {item.replace(/^- /, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>')}
+                            </li>
+                          ))}
+                        </ul>
+                      );
+                    }
+                    
+                    // Handle numbered lists
+                    if (paragraph.match(/^\d+\. /)) {
+                      const items = paragraph.split('\n').filter(line => line.trim());
+                      return (
+                        <ol key={idx} className="list-decimal list-inside space-y-2 my-4 text-slate-700">
+                          {items.map((item, i) => (
+                            <li key={i} className="leading-relaxed">
+                              {item.replace(/^\d+\. /, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>')}
+                            </li>
+                          ))}
+                        </ol>
+                      );
+                    }
+                    
+                    // Regular paragraphs with bold and italic support
+                    if (paragraph.trim()) {
+                      const formattedText = paragraph
+                        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-slate-900">$1</strong>')
+                        .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>')
+                        .replace(/`(.*?)`/g, '<code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm font-mono text-purple-700">$1</code>');
+                      
+                      return (
+                        <p 
+                          key={idx} 
+                          className="text-slate-700 leading-relaxed mb-4"
+                          dangerouslySetInnerHTML={{ __html: formattedText }}
+                        />
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
               </div>
             </div>
           )}
