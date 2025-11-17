@@ -1,10 +1,9 @@
 {
-    
   "openapi": "3.0.3",
   "info": {
     "title": "Polkax402 API",
     "version": "0.1.0",
-    "description": "Polkax402 + HTTPayer (x402-fetch) + LLM processor. Endpoint to fetch Polkadot-related news and return readable markdown + structured JSON."
+    "description": "X402 Payment-Protected API for Polkadot News. Uses Firecrawl + HTTPayer (x402-fetch) + LLM processor. Implements full X402 payment protocol with on-chain verification."
   },
   "servers": [
     {
@@ -12,23 +11,46 @@
       "description": "Local development server"
     },
     {
-        "url": "https://api.polkax402.com",
-        "description": "Production server"
+      "url": "https://api.polkax402.com",
+      "description": "Production server"
     }
-
   ],
   "externalDocs": {
-    "description": "HTTPayer Team - Website",
-    "url": "https://httpayer.com"
+    "description": "X402 Protocol Documentation",
+    "url": "https://github.com/polkadot-api/x402"
   },
   "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check endpoint",
+        "tags": ["System"],
+        "description": "Free endpoint to check API health status. No payment required.",
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "ok" },
+                    "timestamp": { "type": "string", "format": "date-time" },
+                    "service": { "type": "string", "example": "Polkax402 API" },
+                    "version": { "type": "string", "example": "0.1.0" },
+                    "network": { "type": "string", "example": "dotx402" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/polka-news": {
       "get": {
-        "summary": "Search Polkadot-related news and return readable summary",
-        "tags": [
-          "Polka News"
-        ],
-        "description": "Performs a Firecrawl search via HTTPayer relay, then formats results using an LLM into a human-readable markdown summary and structured JSON.",
+        "summary": "Search Polkadot-related news (X402 Protected)",
+        "tags": ["Polka News"],
+        "description": "X402 payment-protected endpoint. Performs a Firecrawl search via HTTPayer relay, then formats results using an LLM into a human-readable markdown summary and structured JSON. Requires valid X402 payment headers.",
         "parameters": [
           {
             "name": "query",
@@ -43,21 +65,247 @@
             "description": "Maximum number of Firecrawl results (1-10)",
             "required": false,
             "schema": { "type": "integer", "minimum": 1, "maximum": 10 }
+          },
+          {
+            "name": "x-payment",
+            "in": "header",
+            "description": "X402 payment payload (JSON string)",
+            "required": false,
+            "schema": { "type": "string" },
+            "example": "{\"from\":\"5GrwvaEF...\",\"to\":\"5GrwvaEF...\",\"amount\":\"10000000000\",\"asset\":\"5CR7oWeb...\",\"network\":\"dotx402\",\"nonce\":\"unique-123\",\"timestamp\":1700000000000,\"signature\":\"0x...\"}"
+          },
+          {
+            "name": "x-payment-signature",
+            "in": "header",
+            "description": "Signature of the payment payload",
+            "required": false,
+            "schema": { "type": "string" },
+            "example": "0xdeadbeef..."
           }
         ],
         "responses": {
           "200": {
-            "description": "Success - formatted PolkaNews output",
+            "description": "Success - Payment verified, formatted PolkaNews output with payment information",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProviderResponse"
+                  "$ref": "#/components/schemas/ProviderResponseWithPayment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid payment header format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string" },
+                    "message": { "type": "string" }
+                  }
+                },
+                "example": {
+                  "error": "Invalid payment header format",
+                  "message": "Payment header must be valid JSON"
                 }
               }
             }
           },
           "402": {
-            "description": "Payment Required - Returns x402 payment instructions",
+            "description": "Payment Required - No payment provided or payment validation failed",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/X402PaymentInstruction" },
+                "examples": {
+                  "noPayment": {
+                    "summary": "No payment headers provided",
+                    "value": {
+                      "x402Version": 1,
+                      "accepts": [
+                        {
+                          "scheme": "exact",
+                          "network": "dotx402",
+                          "payTo": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+                          "asset": "5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM",
+                          "maxAmountRequired": "10000000000",
+                          "resource": "/api/polka-news",
+                          "description": "Polkadot News aggregation and AI-powered summary service",
+                          "mimeType": "application/json",
+                          "maxTimeoutSeconds": 300
+                        }
+                      ]
+                    }
+                  },
+                  "paymentValidationFailed": {
+                    "summary": "Payment validation failed",
+                    "value": {
+                      "error": "Payment validation failed",
+                      "message": "Insufficient payment. Required: 10000000000, Got: 5000000000",
+                      "paymentReceived": {
+                        "from": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+                        "to": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+                        "amount": "5000000000"
+                      }
+                    }
+                  },
+                  "paymentExpired": {
+                    "summary": "Payment expired",
+                    "value": {
+                      "error": "Payment expired",
+                      "message": "Payment is too old. Max age: 300000ms, actual: 400000ms"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          },
+          "503": {
+            "description": "Service Unavailable - Facilitator unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string" },
+                    "message": { "type": "string" }
+                  }
+                },
+                "example": {
+                  "error": "Facilitator unavailable",
+                  "message": "Unable to verify payment with facilitator"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/polka-news/demo": {
+      "get": {
+        "summary": "Search Polkadot-related news (Demo Mode)",
+        "tags": ["Polka News"],
+        "description": "Demo endpoint for testing without real X402 payments. Use query parameter 'paid=true' or header 'x402-paid: true' to bypass payment.",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "Search query to send to Firecrawl",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of results (1-10)",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1, "maximum": 10 }
+          },
+          {
+            "name": "paid",
+            "in": "query",
+            "description": "Set to 'true' to bypass demo payment requirement",
+            "required": false,
+            "schema": { "type": "string", "enum": ["true", "false"] }
+          },
+          {
+            "name": "x402-paid",
+            "in": "header",
+            "description": "Set to 'true' to bypass demo payment requirement",
+            "required": false,
+            "schema": { "type": "string", "enum": ["true", "false"] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success - Demo mode response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "provider": { "type": "string", "example": "polkax402" },
+                    "version": { "type": "string", "example": "v0.1.0" },
+                    "note": { "type": "string", "example": "Demo endpoint - use /polka-news for production with real X402 payments" },
+                    "data": { "$ref": "#/components/schemas/PolkaNewsOutput" }
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment Required - Demo payment instruction",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/X402PaymentInstruction" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/example/protected": {
+      "get": {
+        "summary": "Example endpoint with dynamic pricing (X402 Protected)",
+        "tags": ["Examples"],
+        "description": "Example X402 protected endpoint with dynamic pricing based on complexity parameter. Price = base_price × complexity.",
+        "parameters": [
+          {
+            "name": "complexity",
+            "in": "query",
+            "description": "Complexity multiplier for dynamic pricing (default: 1)",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1, "default": 1 }
+          },
+          {
+            "name": "x-payment",
+            "in": "header",
+            "description": "X402 payment payload (JSON string)",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "x-payment-signature",
+            "in": "header",
+            "description": "Signature of the payment payload",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success - Payment verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "complexity": { "type": "integer" },
+                    "timestamp": { "type": "string", "format": "date-time" },
+                    "payment": { "$ref": "#/components/schemas/PaymentInfo" }
+                  }
+                },
+                "example": {
+                  "message": "Success! You accessed a protected resource.",
+                  "complexity": 3,
+                  "timestamp": "2025-11-16T21:35:00.000Z",
+                  "payment": {
+                    "from": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+                    "amount": "30000000000",
+                    "confirmed": true,
+                    "blockHash": "0xabc123...",
+                    "extrinsicHash": "0xdef456..."
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment Required",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/X402PaymentInstruction" },
@@ -66,25 +314,19 @@
                   "accepts": [
                     {
                       "scheme": "exact",
-                      "network": "base",
-                      "payTo": "0x0000000000000000000000000000000000000000",
-                      "asset": "USDC",
-                      "maxAmountRequired": "0.25",
-                      "resource": "/api/polka-news",
-                      "description": "Payment required to access this endpoint",
+                      "network": "dotx402",
+                      "payTo": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+                      "asset": "5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM",
+                      "maxAmountRequired": "30000000000",
+                      "resource": "/api/example/protected?complexity=3",
+                      "description": "Example protected endpoint with dynamic pricing",
                       "mimeType": "application/json",
-                      "maxTimeoutSeconds": 180
+                      "maxTimeoutSeconds": 300
                     }
                   ]
                 }
               }
             }
-          },
-          "400": {
-            "description": "Bad request"
-          },
-          "500": {
-            "description": "Internal server error"
           }
         }
       }
@@ -113,41 +355,81 @@
         },
         "required": ["as_of", "query_used", "summary_markdown", "bullets", "sources"]
       },
-      "ProviderResponse": {
+      "PaymentInfo": {
+        "type": "object",
+        "description": "Information about the verified X402 payment",
+        "properties": {
+          "from": { "type": "string", "description": "Sender address" },
+          "to": { "type": "string", "description": "Recipient address" },
+          "amount": { "type": "string", "description": "Payment amount in smallest unit" },
+          "asset": { "type": "string", "description": "Asset/token contract address" },
+          "confirmed": { "type": "boolean", "description": "Whether payment was confirmed on-chain" },
+          "blockHash": { "type": "string", "description": "Block hash of the on-chain transaction", "nullable": true },
+          "extrinsicHash": { "type": "string", "description": "Extrinsic hash of the transaction", "nullable": true },
+          "verifiedAt": { "type": "integer", "description": "Unix timestamp when payment was verified" }
+        }
+      },
+      "ProviderResponseWithPayment": {
         "type": "object",
         "properties": {
           "provider": { "type": "string", "example": "polkax402" },
           "version": { "type": "string", "example": "v0.1.0" },
-          "price_per_call_usd": { "type": "number", "example": 0.25 },
-          "data": { "$ref": "#/components/schemas/PolkaNewsOutput" }
+          "data": { "$ref": "#/components/schemas/PolkaNewsOutput" },
+          "payment": { "$ref": "#/components/schemas/PaymentInfo" }
         },
-        "required": ["provider", "version", "price_per_call_usd", "data"]
-      }
-      ,
+        "required": ["provider", "version", "data", "payment"]
+      },
       "X402PaymentInstruction": {
         "type": "object",
+        "description": "X402 payment instruction following the X402 protocol specification",
         "properties": {
-          "x402Version": { "type": "integer", "example": 1 },
+          "x402Version": { "type": "integer", "example": 1, "description": "X402 protocol version" },
           "accepts": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "scheme": { "type": "string", "example": "exact" },
-                "network": { "type": "string", "example": "base" },
-                "payTo": { "type": "string", "example": "0x0000000000000000000000000000000000000000" },
-                "asset": { "type": "string", "example": "USDC" },
-                "maxAmountRequired": { "type": "string", "example": "0.25" },
-                "resource": { "type": "string", "example": "/api/polka-news" },
-                "description": { "type": "string", "example": "Payment required to access this endpoint" },
-                "mimeType": { "type": "string", "example": "application/json" },
-                "maxTimeoutSeconds": { "type": "integer", "example": 180 }
+                "scheme": { "type": "string", "example": "exact", "description": "Payment scheme" },
+                "network": { "type": "string", "example": "dotx402", "description": "Blockchain network" },
+                "payTo": { "type": "string", "example": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", "description": "Recipient address" },
+                "asset": { "type": "string", "example": "5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM", "description": "Asset/token contract address" },
+                "maxAmountRequired": { "type": "string", "example": "10000000000", "description": "Maximum payment amount required (in smallest unit)" },
+                "resource": { "type": "string", "example": "/api/polka-news", "description": "Protected resource path" },
+                "description": { "type": "string", "example": "Polkadot News aggregation and AI-powered summary service", "description": "Human-readable description" },
+                "mimeType": { "type": "string", "example": "application/json", "description": "Response MIME type" },
+                "maxTimeoutSeconds": { "type": "integer", "example": 300, "description": "Maximum time to complete payment" }
               },
               "required": ["scheme", "network", "payTo", "asset", "maxAmountRequired", "resource"]
             }
           }
         },
         "required": ["x402Version", "accepts"]
+      },
+      "X402PaymentPayload": {
+        "type": "object",
+        "description": "Payment payload to be sent in x-payment header",
+        "properties": {
+          "from": { "type": "string", "description": "Sender address" },
+          "to": { "type": "string", "description": "Recipient address" },
+          "amount": { "type": "string", "description": "Payment amount in smallest unit" },
+          "asset": { "type": "string", "description": "Asset/token contract address" },
+          "network": { "type": "string", "description": "Blockchain network" },
+          "nonce": { "type": "string", "description": "Unique nonce to prevent replay attacks" },
+          "timestamp": { "type": "integer", "description": "Unix timestamp in milliseconds" },
+          "signature": { "type": "string", "description": "Cryptographic signature of the payment" },
+          "resourceHash": { "type": "string", "description": "Optional hash of the resource being accessed", "nullable": true }
+        },
+        "required": ["from", "to", "amount", "asset", "network", "nonce", "timestamp", "signature"],
+        "example": {
+          "from": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+          "to": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+          "amount": "10000000000",
+          "asset": "5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM",
+          "network": "dotx402",
+          "nonce": "unique-nonce-123",
+          "timestamp": 1700000000000,
+          "signature": "0xdeadbeef..."
+        }
       }
     }
   }

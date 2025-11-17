@@ -17,7 +17,7 @@ let fetchWithPayment: typeof fetch = fetch;
 if (PRIVATE_KEY) {
   try {
     const account = privateKeyToAccount(PRIVATE_KEY as `0x${string}`);
-    fetchWithPayment = wrapFetchWithPayment(fetch, account);
+    fetchWithPayment = wrapFetchWithPayment(fetch, account) as typeof fetch;
   } catch (err) {
     console.warn("[FirecrawlClient] invalid PRIVATE_KEY provided:", err);
     // keep fallback to regular fetch
