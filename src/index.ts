@@ -1,14 +1,30 @@
 import express from "express";
+import cors from "cors";
 import dotenv from "dotenv";
 import polkaNewsRoute from "./routes/polkaNewsRoute";
 import swaggerUi from "swagger-ui-express";
 import openapiSpec from "../docs/openapi.json";
-import { createX402Middleware } from "./middleware/x402Middleware";
-import { X402Request } from "./utils/types";
+import { createX402Middleware } from "dotx402/server";
+import type { X402Request } from "dotx402/server";
 
 dotenv.config();
 
 const app = express();
+
+// CORS configuration
+app.use(cors({
+  origin: [
+    'http://localhost:3003',
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'https://polkax402.com',
+    'https://api.polkax402.com'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Signature', 'X-Polkadot-Address']
+}));
+
 app.use(express.json());
 
 // Health check endpoint (free - no X402 protection)
@@ -41,7 +57,7 @@ app.get("/", (req, res) => {
 // Example X402 protected endpoint with dynamic pricing
 app.get('/api/example/protected',
   createX402Middleware({
-    network: process.env.NETWORK || 'polkax402',
+    network: (process.env.NETWORK || 'polkax402') as any,
     recipientAddress: process.env.RECIPIENT_ADDRESS || '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
     pricePerRequest: (req) => {
       // Dynamic pricing based on query parameter

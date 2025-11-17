@@ -1,15 +1,20 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { FirecrawlClient } from "../services/firecrawlClient";
 import { LlmProcessor } from "../services/llmProcessor";
-import { createX402Middleware, placeholderX402Middleware } from "../middleware/x402Middleware";
-import { X402Request } from "../utils/types";
+import { createX402Middleware } from "dotx402/server";
+import type { X402Request } from "dotx402/server";
+
+// Placeholder middleware for demo endpoint (bypasses payment)
+const placeholderX402Middleware = (_req: Request, _res: Response, next: NextFunction) => {
+  next();
+};
 
 const router = Router();
 const firecrawlClient = new FirecrawlClient();
 
 // Create X402 middleware with configuration from environment
 const x402Protected = createX402Middleware({
-  network: process.env.NETWORK || 'polkax402',
+   network: (process.env.NETWORK || 'polkax402') as any,
   recipientAddress: process.env.RECIPIENT_ADDRESS || '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
   pricePerRequest: process.env.PRICE_PER_REQUEST || '10000000000', // 0.01 tokens
   asset: process.env.CONTRACT_ADDRESS || '5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM',
@@ -65,10 +70,11 @@ router.get(
           to: paymentInfo?.payload.to,
           amount: paymentInfo?.payload.amount,
           asset: paymentInfo?.payload.asset,
+          verified: paymentInfo?.verified,
           confirmed: paymentInfo?.confirmedOnChain,
           blockHash: paymentInfo?.facilitatorResponse?.blockHash,
           extrinsicHash: paymentInfo?.facilitatorResponse?.extrinsicHash,
-          verifiedAt: paymentInfo?.verifiedAt,
+          
         },
       };
 
