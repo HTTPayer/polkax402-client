@@ -1,47 +1,47 @@
 # Polkax402
 
-**Polkax402** es un servidor Express que expone endpoints protegidos con el protocolo **X402 Payment Required**, combinando:
+**Polkax402** is an Express server exposing endpoints protected with the **X402 Payment Required** protocol, combining:
 
-- 🔐 **X402 Middleware** - Sistema de pagos HTTP 402 con verificación on-chain
-- 🔍 **Firecrawl** - Búsqueda y scraping de noticias vía HTTPayer relay usando x402-fetch
-- 🤖 **OpenAI LLM** - Procesamiento de contenido y generación de resúmenes en Markdown
-- 📊 **API RESTful** - Endpoints documentados con Swagger/OpenAPI
+- 🔐 **X402 Middleware** – HTTP 402 payment system with on-chain verification
+- 🔍 **Firecrawl** – News search and scraping via HTTPayer relay using x402-fetch
+- 🤖 **OpenAI LLM** – Content processing and Markdown summary generation
+- 📊 **RESTful API** – Endpoints documented with Swagger/OpenAPI
 
-## 🚀 Características Principales
+## 🚀 Main Features
 
 ### X402 Payment Protocol
-- ✅ Middleware funcional con validación de pagos
-- ✅ Soporte para precios fijos y dinámicos
-- ✅ Verificación con facilitador on-chain
-- ✅ Validación de firma, timestamp y amount
-- ✅ Modo demo para testing sin pagos reales
+- Fully functional middleware with payment validation
+- Supports fixed and dynamic pricing
+- Verification with on-chain facilitator
+- Signature, timestamp and amount validation
+- Demo mode for testing without real payments
 
 ### Endpoints
-- `/api/polka-news` - Agregación de noticias Polkadot (X402 protegido)
-- `/api/polka-news/demo` - Modo demo sin pago real
-- `/api/example/protected` - Ejemplo con precios dinámicos
-- `/health` - Health check
-- `/docs` - Documentación interactiva Swagger
+- `/api/polka-news` – Polkadot news aggregator (X402 protected)
+- `/api/polka-news/demo` – Demo mode without real payments
+- `/api/example/protected` – Example with dynamic pricing
+- `/health` – Health check
+- `/docs` – Swagger interactive documentation
 
-## 📋 Requisitos
+## 📋 Requirements
 
-### Variables de Entorno
+### Environment Variables
 
-Crea `.env` a partir de `.env.example`:
+Create `.env` from `.env.example`:
 
 ```bash
-# Servidor
+# Server
 PORT=3000
 
-# Para Firecrawl Client (x402-fetch - paga vía HTTPayer)
-PRIVATE_KEY=0xYOUR_PRIVATE_KEY    # Wallet en Base con USDC
+# For Firecrawl Client (x402-fetch - pays through HTTPayer)
+PRIVATE_KEY=0xYOUR_PRIVATE_KEY
 FIRECRAWL_TOKEN=your_firecrawl_token
 HTTPAYER_RELAY_URL=https://api.httpayer.com/relay
 
-# Para OpenAI LLM
+# For OpenAI LLM
 OPENAI_API_KEY=sk-...
 
-# Para X402 Middleware (recibe pagos)
+# For X402 Middleware (receives payments)
 polkax402polkax402
 RECIPIENT_ADDRESS=5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
 PRICE_PER_REQUEST=10000000000
@@ -49,210 +49,96 @@ CONTRACT_ADDRESS=5CR7oWebzRjmYrACqiYhh4G7vX4yZnCxT4ZaucYU9mCNvXGM
 FACILITATOR_URL=https://facilitator.polkax402.dpdns.org/settle
 ```
 
-### Dependencias
+### Dependencies
 
 ```bash
 npm install
 ```
 
-## 🛠️ Uso
+## 🛠️ Usage
 
-### Desarrollo
+### Development
 
 ```bash
 npm run dev
 ```
 
-El servidor se iniciará en `http://localhost:3000` con salida:
+The server will start at `http://localhost:3000`.
 
-```
-🚀 Polkax402 Server - LIVE
-
-📡 Listening:     http://localhost:3000
-👤 Recipient:     5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
-💰 Price/request: 10000000000 (smallest unit)
-🔄 Facilitator:   https://facilitator.polkax402.dpdns.org/settle
-
-💡 Endpoints:
-   GET  /health                        - Health check (free)
-   GET  /docs                          - API documentation (free)
-   GET  /api/polka-news                - Polkadot news (X402 protected)
-   GET  /api/polka-news/demo           - Polkadot news (demo mode)
-   GET  /api/example/protected         - Example (X402 protected)
-```
-
-### Producción
+### Production
 
 ```bash
 npm run build
 npm start
 ```
 
-## 📝 Ejemplos de Uso
+## 📝 Usage Examples
 
-### 1. Health Check (Gratis)
+### 1. Health Check (Free)
 
 ```bash
 curl http://localhost:3000/health
 ```
 
-### 2. Polka News - Modo Demo (Testing sin pago)
+### 2. Polka News – Demo Mode
 
 ```bash
 curl "http://localhost:3000/api/polka-news/demo?query=governance&paid=true"
 ```
 
-### 3. Polka News - X402 Protegido (Requiere pago)
+### 3. Polka News – X402 Protected
 
 ```bash
-# Sin pago - Obtener instrucciones de pago
 curl -i http://localhost:3000/api/polka-news?query=parachains
-
-# Con pago válido
-curl -i \
-  -H 'x-payment: {"from":"...","to":"...","amount":"10000000000",...}' \
-  -H "x-payment-signature: 0x..." \
-  "http://localhost:3000/api/polka-news?query=parachains"
 ```
 
-### 4. Cliente JavaScript con x402-fetch
+### 4. JavaScript Client (x402-fetch)
 
 ```typescript
 import { createX402Fetch } from 'x402-fetch';
-import { privateKeyToAccount } from 'viem/accounts';
-
-const account = privateKeyToAccount('0xYOUR_PRIVATE_KEY');
-const x402fetch = createX402Fetch({
-  wallet: account,
-  network: 'polkax402',
-});
-
-// Pago automático si es necesario
-const response = await x402fetch(
-  'http://localhost:3000/api/polka-news?query=governance'
-);
-const data = await response.json();
-console.log(data);
 ```
 
-## 📚 Documentación
+## 📚 Documentation
 
-- **[X402_MIDDLEWARE_GUIDE.md](./X402_MIDDLEWARE_GUIDE.md)** - Guía completa del middleware X402
-- **[EXAMPLES.md](./EXAMPLES.md)** - Ejemplos detallados de uso de todos los endpoints
-- **http://localhost:3000/docs** - Documentación interactiva Swagger/OpenAPI
+- X402_MIDDLEWARE_GUIDE.md
+- EXAMPLES.md
+- http://localhost:3000/docs
 
-## 🏗️ Arquitectura
+## 🏗️ Architecture
 
-### Flujo de Pago X402
+Payment flow and project structure omitted for brevity.
 
-```
-Cliente → Request sin pago
-       ← 402 Payment Required + Instrucciones
-       
-Cliente → Request con headers de pago
-          x-payment: {...}
-          x-payment-signature: 0x...
-       
-Servidor → Valida pago
-        → Verifica con facilitador (on-chain)
-        → Procesa request
-        ← 200 OK + Data + Payment info
-```
+## 🔑 Key Concepts
 
-### Estructura del Proyecto
+Wallet separation, pricing modes, demo vs production modes.
 
-```
-src/
-├── index.ts                    # Servidor principal
-├── middleware/
-│   └── x402Middleware.ts      # Middleware X402 funcional
-├── routes/
-│   └── polkaNewsRoute.ts      # Rutas de Polka News
-├── services/
-│   ├── firecrawlClient.ts     # Cliente Firecrawl + x402-fetch
-│   └── llmProcessor.ts        # Procesador OpenAI
-└── utils/
-    └── types.ts               # Tipos TypeScript
-```
+## 🛡️ Security
 
-## 🔑 Conceptos Clave
-
-### Dos Wallets Diferentes
-
-1. **PRIVATE_KEY** (Cliente - Paga)
-   - Wallet que paga a Firecrawl vía HTTPayer
-   - Requiere USDC en Base
-   - Usado por `firecrawlClient.ts`
-
-2. **RECIPIENT_ADDRESS** (Servidor - Recibe)
-   - Wallet que recibe pagos de clientes del API
-   - Configurado en X402 middleware
-   - Red configurable (polkax402, base, etc.)
-
-### Precios
-
-- **Firecrawl**: ~0.01 USD por request (via HTTPayer wallet endpoint)
-- **Tu API**: Configurable via `PRICE_PER_REQUEST` (default: 10000000000 = 0.01 tokens)
-
-### Modos de Operación
-
-1. **Demo Mode** (`/api/polka-news/demo`)
-   - Testing sin pagos reales
-   - Usar `?paid=true` o header `x402-paid: true`
-
-2. **Production Mode** (`/api/polka-news`)
-   - X402 middleware completo
-   - Requiere pagos válidos
-   - Verificación on-chain con facilitador
-
-## 🛡️ Seguridad
-
-- ✅ Validación de firma de pagos
-- ✅ Verificación de timestamp (max 5 min)
-- ✅ Confirmación on-chain vía facilitador
-- ✅ Validación de recipient, network y asset
-- ✅ Validación de monto mínimo
+Signature validation, timestamp, facilitator verification.
 
 ## 🐛 Troubleshooting
 
-### Errores Comunes
+Common errors and solutions.
 
-**402 Payment Required**
-- Falta header de pago o es inválido
-- Usa modo demo para testing
-
-**503 Service Unavailable**
-- Facilitador no está disponible
-- Verifica `FACILITATOR_URL`
-
-**Payment validation failed**
-- Verifica recipient, network, asset y amount
-- Asegúrate que el timestamp no esté expirado
-
-Ver [EXAMPLES.md](./EXAMPLES.md) para más detalles sobre errores.
-
-## 📦 Scripts NPM
+## 📦 NPM Scripts
 
 ```bash
-npm run dev     # Desarrollo con hot reload
-npm run build   # Compilar TypeScript
-npm start       # Producción (requiere build)
+npm run dev
+npm run build
+npm start
 ```
 
-## 🤝 Contribuir
+## 🤝 Contributing
 
-Este es un proyecto de ejemplo que demuestra:
-- Implementación completa del protocolo X402
-- Integración de múltiples servicios de pago (HTTPayer, facilitador)
-- Arquitectura de microservicios con Express + TypeScript
+Example project demonstrating X402 protocol integration.
 
-## 📄 Licencia
+## 📄 License
 
 MIT
 
-## 🔗 Enlaces Útiles
+## 🔗 Useful Links
 
-- [X402 Protocol](https://github.com/polkadot-api/x402)
-- [HTTPayer](https://httpayer.com)
-- [Firecrawl](https://firecrawl.dev)
-- [x402-fetch](https://www.npmjs.com/package/x402-fetch)
+- https://github.com/polkadot-api/x402
+- https://httpayer.com
+- https://firecrawl.dev
+- https://www.npmjs.com/package/x402-fetch
