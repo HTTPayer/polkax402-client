@@ -23,6 +23,7 @@
     "@polkadot/util": "^13.5.8",
     "@polkadot/util-crypto": "^13.5.8",
     "dotenv": "16.0.0",
+    "dotx402": "file:../packages/dotx402",
     "express": "^4.21.2",
     "openai": "4.8.0",
     "swagger-ui-express": "^4.6.2",
